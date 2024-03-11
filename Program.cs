@@ -56,10 +56,8 @@ namespace GomamayoBot{
             var context = new SocketCommandContext(_client, message);
             if (message.Author.IsBot) return;
 
-            if (gomamayo.IsGomamayo(message.Content)){
+            if (gomamayo.IsHigherGomamayo(message.Content)){
                 await message.Channel.SendMessageAsync("ごままよ");
-            }else{
-                await message.Channel.SendMessageAsync("ごままよじゃない");
             }
 
             int argPos = 0;
