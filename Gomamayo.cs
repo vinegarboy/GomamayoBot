@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using MeCab;
 
 namespace GomamayoNET{
@@ -23,14 +24,25 @@ namespace GomamayoNET{
                     }
 
                     // 前のノードが名詞で、現在のノードも名詞であり、その音が前のノードと同じである場合、ゴママヨと判定
-                    if (beforeIsNoun && features[0] == "名詞" && features[7][0] == beforeSurface[beforeSurface.Length - 1]){
-                        return true;
+                    if(!Regex.IsMatch(node.Surface, @"[\u4E00-\u9FFF]")){
+                        if (beforeIsNoun && features[0] == "名詞" && node.Surface[0] == beforeSurface[beforeSurface.Length - 1]){
+                            return true;
+                        }
+                    }else{
+                        if (beforeIsNoun && features[0] == "名詞" && features[7][0] == beforeSurface[beforeSurface.Length - 1]){
+                            return true;
+                        }
                     }
+                    
 
                     // 現在のノードが名詞である場合、フラグを設定
                     if (features[0] == "名詞"){
                         beforeIsNoun = true;
-                        beforeSurface = features[7];
+                        if(!Regex.IsMatch(node.Surface, @"[\u4E00-\u9FFF]")){
+                            beforeSurface = node.Surface;
+                        }else{
+                            beforeSurface = features[7];
+                        }
                     }
                     else{
                         beforeIsNoun = false;
@@ -57,25 +69,38 @@ namespace GomamayoNET{
                     var displayFeatures = string.Join(", ", features);
                     Console.WriteLine($"{node.Surface}\t{displayFeatures}\nBeforeSurface: {beforeSurface}");
 
-                    //記号の場合は飛ばす
-                    if (features[0] == "記号"){
+                    //名詞以外の場合は飛ばす
+                    if (features[0] != "名詞"){
                         continue;
                     }
 
                     // 前のノードが名詞で、現在のノードも名詞であり、その音が前のノードと同じである場合、ゴママヨと判定
                     for(int i = 0; i < GomamayoThreshold; i++){
-                        if(features[7].Length <= i || beforeSurface.Length <= i){
-                            break;
-                        }
-                        if (beforeIsNoun && features[0] == "名詞" && features[7][i] == beforeSurface[beforeSurface.Length - i-1]&&i!=0){
-                            return true;
+                        if(!Regex.IsMatch(node.Surface, @"[\u4E00-\u9FFF]")){
+                            if(node.Surface.Length <= i || beforeSurface.Length <= i){
+                                break;
+                            }
+                            if (beforeIsNoun && features[0] == "名詞" && features[7][i] == beforeSurface[beforeSurface.Length - i-1]&&i!=0){
+                                return true;
+                            }
+                        }else{
+                            if(features[7].Length <= i || beforeSurface.Length <= i){
+                                break;
+                            }
+                            if (beforeIsNoun && features[0] == "名詞" && features[7][i] == beforeSurface[beforeSurface.Length - i-1]&&i!=0){
+                                return true;
+                            }
                         }
                     }
 
                     // 現在のノードが名詞である場合、フラグを設定
                     if (features[0] == "名詞"){
                         beforeIsNoun = true;
-                        beforeSurface = features[7];
+                        if(!Regex.IsMatch(node.Surface, @"[\u4E00-\u9FFF]")){
+                            beforeSurface = node.Surface;
+                        }else{
+                            beforeSurface = features[7];
+                        }
                     }
                     else{
                         beforeIsNoun = false;

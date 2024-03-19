@@ -47,7 +47,11 @@ namespace GomamayoBot{
         }
 
         private Task onReady(){
+            
+
             Console.WriteLine($"{_client.CurrentUser} is Running!!");
+
+
             return Task.CompletedTask;
         }
 
@@ -55,16 +59,14 @@ namespace GomamayoBot{
             var message = _message as SocketUserMessage;
             var context = new SocketCommandContext(_client, message);
             if (message.Author.IsBot) return;
-
-            if (gomamayo.IsHigherGomamayo(message.Content)){
-                await message.Channel.SendMessageAsync("ごままよ");
+            if (message.Content[0] != '!'&&gomamayo.IsHigherGomamayo(message.Content)){
+                await message.Channel.SendMessageAsync($"{message.Content}は高次ゴママヨです。");
+            }else if(message.Content[0] != '!'&&gomamayo.IsGomamayo(message.Content)){
+                await message.Channel.SendMessageAsync($"{message.Content}はゴママヨです。");
             }
-
             int argPos = 0;
             if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))) return;
-
             var result = await _commands.ExecuteAsync(context: context, argPos: argPos, services: _services);
-
             if (!result.IsSuccess) await context.Channel.SendMessageAsync(result.ErrorReason);
         }
 
@@ -72,8 +74,19 @@ namespace GomamayoBot{
             Gomamayo gomamayo = new Gomamayo();
 
             [Command("echo")]
-            public async Task EchoAsync(){
-                await ReplyAsync("生存確認！");
+            public async Task EchoAsync([Remainder]string text){
+                await ReplyAsync("生存確認！\n"+text);
+            }
+
+            [Command("GomamayoCheck")]
+            public async Task GomamayoCheck([Remainder]string text){
+                if (gomamayo.IsHigherGomamayo(text)){
+                    await ReplyAsync($"{text}は高次ゴママヨです。");
+                }else if(gomamayo.IsGomamayo(text)){
+                    await ReplyAsync($"{text}はゴママヨです。");
+                }else{
+                    await ReplyAsync($"{text}はゴママヨではありません。");
+                }
             }
         }
     }
